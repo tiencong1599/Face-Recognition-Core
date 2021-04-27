@@ -5,6 +5,7 @@ import pickle
 from collections import deque
 import face_recognition
 from datetime import datetime
+import json
 
 pickle.load(open('svm.pkl','rb'))
 
@@ -13,6 +14,9 @@ class Camera:
         self.url = url
         self.deque_ = deque(maxlen=deque_size)
         self.camera_id = camera_id
+        self.list_log = []
+
+
         self.camera_thread = Thread(target=self.open_camera, args=())
         #self.camera_thread.daemon=True
         self.process_thread = Thread(target=self.update_frame,args=())
@@ -50,7 +54,17 @@ class Camera:
                     "name": name,
                     "camera-ip":self.camera_id
                 }
-                print(dict)
+                data_json = json.dumps(dict)
+                self.list_log.append((data_json))
+            if (len(self.list_log)>=50):
+                self.SerializeJson()
+    def SerializeJson(self):
+        time = datetime.now().strftime('%d-%m-%Y---%H-%M-%S')
+        jsonfile = open('D:/pythonProjects/Logs/' + str(time) + '.json', 'w')
+        for i in self.list_log:
+            jsonfile.write(i+'\n')
+        jsonfile.close()
+        self.list_log.clear()
 
     def start(self):
         self.camera_thread.start()
