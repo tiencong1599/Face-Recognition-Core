@@ -30,8 +30,8 @@ class Camera:
             i+=1
             frame_resize = cv2.resize(frame, (640,480))
             cv2.imshow('Video', frame_resize)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
             # cvtColor
             frame_resize = frame_resize[:, :, ::-1]
             if i==15:
@@ -54,10 +54,11 @@ class Camera:
                     "name": name,
                     "camera-ip":self.camera_id
                 }
+                print(dict)
                 data_json = json.dumps(dict)
                 self.list_log.append((data_json))
-            if (len(self.list_log)>=50):
-                self.SerializeJson()
+            # if (len(self.list_log)>=50):
+            #     self.SerializeJson()
     def SerializeJson(self):
         time = datetime.now().strftime('%d-%m-%Y---%H-%M-%S')
         jsonfile = open('D:/pythonProjects/Logs/' + str(time) + '.json', 'w')
@@ -68,12 +69,12 @@ class Camera:
 
     def start(self):
         self.camera_thread.start()
-        time.sleep(2)
+        time.sleep(10)
         print("lenght deque global: "+str(len(self.deque_)))
         self.process_thread.start()
         #self.print1()
 if __name__ == '__main__':
-    task = Camera(0,30,1)
+    task = Camera('rtsp://192.168.1.3:5554/playlist.m3u',30,1)
     task.start()
 
 
