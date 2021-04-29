@@ -20,7 +20,7 @@ for person in train_dir:
             names.append(person)
         else:
             print(person+'/'+person_img+"was skipped and can't be used for training")
-clf = svm.SVC(gamma='scale')
+clf = svm.SVC(gamma='scale',kernel='rbf',probability=True)
 clf.fit(encodings,names)
 pickle.dump(clf,open('svm.pkl','wb'))
 
