@@ -38,7 +38,7 @@ class Camera:
             # if cv2.waitKey(1)==27:
             #     break
             time.sleep(1/24)
-            print(len(self.deque_),self.url)
+            print(str(len(self.deque_))+' cua '+str(self.camera_id))
         cv2.destroyAllWindows()
     def update_frame(self):
         while True:
@@ -54,7 +54,7 @@ class Camera:
                         best_name = self.know_face_names[best_class_indices[0]]
                         face_names.append(best_name)
                     else:
-                        print('unknown',self.url)
+                        print('unknown '+str(self.url))
                 if len(face_names) >= 1 and self.previous_name == '':
                     self.previous_name = face_names[0]
                 if len(face_names) >= 1 and self.previous_name == face_names[0]:
@@ -80,7 +80,7 @@ class Camera:
 
     def start(self):
         self.camera_thread.start()
-        time.sleep(1)
+        time.sleep(3)
         print("lenght deque global: " + str(len(self.deque_)))
         self.process_thread.start()
 
@@ -97,5 +97,8 @@ class Camera:
         self.list_log.clear()
 
 if __name__ =='__main__':
-    task = Camera('rtsp://192.168.1.3:5554/playlist.m3u',99,db_path = 'D:/pythonProjects/dataset/')
+    task1 = Camera('rtsp://192.168.1.3:5554/playlist.m3u', 'tablet', db_path='D:/pythonProjects/dataset/')
+    thread2 = Thread(target=task1.start, args=()).start()
+    task = Camera(0,'laptop',db_path = 'D:/pythonProjects/dataset/')
     thread1 = Thread(target=task.start, args=()).start()
+
