@@ -24,6 +24,7 @@ class Camera:
         self.timeApperance=0
         self.previous_name = ''
         self.name()
+        self.check_folder()
         self.camera_thread = Thread(target=self.open_camera, args=())
         #self.camera_thread.daemon=True
         self.process_thread = Thread(target=self.update_frame,args=())
@@ -60,7 +61,7 @@ class Camera:
                 if len(face_names) >= 1 and self.previous_name == face_names[0]:
                     self.timeApperance += 1
 
-                if self.timeApperance == 5:
+                if self.timeApperance == 6:
                     self.timeApperance = 0
                     self.previous_name = ''
                     for (top, right, bottom, left), name in zip(face_location, face_names):
@@ -75,7 +76,7 @@ class Camera:
                         self.list_log.append((data_json))
                     if (len(self.list_log)>=5):
                         self.SerializeJson()
-                if len(self.deque_) > 5:
+                if len(self.deque_) > 8:
                     self.deque_.clear()
 
     def start(self):
@@ -88,13 +89,24 @@ class Camera:
         path_folder = os.listdir(str(self.db_path))
         for i in path_folder:
             self.know_face_names.append(str(i).strip("'[]'"))
+    def check_folder(self):
+        folder = datetime.now().strftime('%d-%m-%Y')
+        listfolder = 'D:\pythonProjects\Face-Recognition-Core\Core\Face-Recogition\logs\\'
+        if folder not in os.listdir(listfolder):
+            os.mkdir(listfolder+folder)
     def SerializeJson(self):
-        time = datetime.now().strftime('%d-%m-%Y---%Hh%Mm%Ss')
-        jsonfile = open('D:\pythonProjects\Face-Recognition-Core\Core\Face-Recogition\logs\\' + str(time) + '.json', 'w')
+        # moi folder la mot ngay, chua tat ca file json cua moi camera
+        # folder duoc dinh dang la ngay dd-mm-yyyy
+        # json duoc dinh dang la camera's url - {}hour{}minute{}second{}
+        time = datetime.now().strftime(' - %Hhour%Mminute%Ssecond')
+        folder = datetime.now().strftime('%d-%m-%Y')
+        jsonfile = open('D:\pythonProjects\Face-Recognition-Core\Core\Face-Recogition\logs\\'+str(folder)+'\\'+str(self.url) + str(time) + '.json',
+                        'w')
         for i in self.list_log:
             jsonfile.write(i+'\n')
         jsonfile.close()
         self.list_log.clear()
+
 
 if __name__ =='__main__':
     # task1 = Camera('rtsp://192.168.1.3:5554/playlist.m3u', 'tablet', db_path='D:/pythonProjects/dataset/')
