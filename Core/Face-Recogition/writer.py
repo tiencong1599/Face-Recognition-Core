@@ -16,13 +16,12 @@ import mprpc
 # serializeJson
 def SerializeJson(list_logs):
     time = datetime.now().strftime('%d-%m-%Y---%H-%M-%S')
-    jsonfile = open("E:\\PycharmProjects\\IPCtest\\logs\\" + str(time) + '.json', 'w')
+    jsonfile = open("./logs/" + str(time) + '.json', 'w')
     for i in list_logs:
         jsonfile.write(i)
         jsonfile.write('\n')
     jsonfile.close()
     list_logs.clear()
-
 
 
 class Core:
@@ -86,10 +85,11 @@ class Core:
             process_this_frame = not process_this_frame
 
             for (top, right, bottom, left), name in zip(face_locations, face_names):
-                dict = {"time": datetime.now().strftime('%d/%m/%Y %H:%M:%S'),"region": (top, right, bottom, left),"name": name,"camera-ip": ip}
+                dict = {"time": datetime.now().strftime('%d/%m/%Y %H:%M:%S'), "region": (top, right, bottom, left),
+                        "name": name, "camera-ip": ip}
                 data_json = json.dumps(dict)
                 list_logs.append(data_json)
-                cv2.rectangle(frame, (left*4, top*4), (right*4, bottom*4), (0, 0, 255), 2)
+                cv2.rectangle(frame, (left * 4, top * 4), (right * 4, bottom * 4), (0, 0, 255), 2)
                 font = cv2.FONT_HERSHEY_DUPLEX
                 cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
 
@@ -176,6 +176,7 @@ def detection_(ip, db_path):
     capture.release()
     cv2.destroyAllWindows()
 
+
 monkey.patch_all()
 
 
@@ -184,7 +185,7 @@ class DeepFaceServer(RPCServer):
     @staticmethod
     def stream():
         print("stream")
-        with open("E:/PycharmProjects/Facereg/settings.json") as f:
+        with open("../../API/settings.json") as f:
             settings = json.loads(f.read())
         Core.detection(settings['source'], settings['db_path'])
 
@@ -193,4 +194,4 @@ class DeepFaceServer(RPCServer):
 # server = StreamServer(('127.0.0.1', 6000), DeepFaceServer())
 # server.serve_forever()
 
-Core.detection("192.168.1.2:5554/playlist.m3u", "E:/PycharmProjects/Facereg/database/")
+# Core.detection("192.168.1.2:5554/playlist.m3u", "E:/PycharmProjects/Facereg/database/")

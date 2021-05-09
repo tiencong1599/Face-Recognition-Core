@@ -5,9 +5,14 @@ from gevent import monkey
 from datetime import datetime
 import numpy as np
 import threading
+import subprocess
+import shlex
+from subprocess import Popen
 from multiprocessing import Process
 import time
 import json
+from gevent.server import StreamServer
+from mprpc.server import RPCServer
 
 
 def SerializeJson(list_logs):
@@ -24,8 +29,11 @@ class Core:
 
     @staticmethod
     def stream(ip, buffer):
-        print(threading.currentThread().getName(), 'Starting')
-        capture = cv2.VideoCapture(0)
+        # print(threading.currentThread().getName(), 'Starting')
+        if int(ip) == 0:
+            capture = cv2.VideoCapture(0)
+        else:
+            capture = cv2.VideoCapture("rtsp://"+ip)
         # capture.set(cv2.CAP_PROP_BUFFERSIZE,2)
         while capture.isOpened():
             ret, frame = capture.read()
@@ -37,7 +45,7 @@ class Core:
                 cv2.rectangle(frame, (left * 4, top * 4), (right * 4, bottom * 4), (0, 0, 255), 2)
             except:
                 print("No face")
-            cv2.imshow('Video', frame)
+            cv2.imshow(str(threading.currentThread().native_id), frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             time.sleep(1 / 24)
@@ -46,7 +54,7 @@ class Core:
 
     @staticmethod
     def processing(db_path, ip, buffer):
-        print(threading.currentThread().getName(), 'Starting')
+        # print(threading.currentThread().getName(), 'Starting')
         path_folder = os.listdir(str(db_path))
         image = []
         path = str(db_path)
@@ -133,20 +141,36 @@ class Core:
         return 0
 
 
-def start():
-    print("start")
-    with open("API/settings.json") as f:
-        settings = json.loads(f.read())
-    buffer = []
-    stream = threading.Thread(target=Core.stream, args=(settings['source'], buffer))
-    process = threading.Thread(target=Core.processing, args=(settings['db_path'], settings['source'], buffer))
-    stream.start()
-    process.start()
-    # if not stream.is_alive():
-    #    threading.Event.set()
-    return [stream.name, stream.native_id, process.name, process.native_id]
-
-
 monkey.patch_all()
 
-start()
+
+class DeepFaceServer(RPCServer):
+
+    @staticmethod
+    def stream_process():
+        print("stream and process")
+        with open("../../API/settings.json") as f:
+            settings = json.loads(f.read())
+        buffer = []
+        thread1 = threading.Thread(target=Core.stream, args=(settings['source'], buffer))
+        thread2 = threading.Thread(target=Core.processing, args=(settings['db_path'], settings['source'], buffer))
+        thread1.start()
+        thread2.start()
+        # thread1.join()
+        # thread2.join()
+
+    @staticmethod
+    def stream_process2():
+        print("open process")
+        args = shlex.join(["python", "Core/Face-Recogition/script.py"])
+        p = subprocess.Popen(args=args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return p.pid
+
+    @staticmethod
+    def kill_process(pid):
+        return os.kill(pid)
+
+
+print("--running--")
+server = StreamServer(('127.0.0.1', 6000), DeepFaceServer())
+server.serve_forever()
