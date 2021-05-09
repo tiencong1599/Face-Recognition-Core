@@ -162,12 +162,27 @@ class DeepFaceServer(RPCServer):
     @staticmethod
     def stream_process2():
         print("open process")
-        args = shlex.join(["python", "Core/Face-Recogition/script.py"])
-        p = subprocess.Popen(args=args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # open settings file
+
+        with open("API/settings.json") as f:
+            settings = json.loads(f.read())
+
+        # run process with face-recognition package
+        if settings['model'] == "face-recognition":
+            args = shlex.join(["python", "Core/Face-Recogition/script.py"])
+            p = subprocess.Popen(args=args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # run process with SVM package
+        if settings['model'] == "SVM":
+            args = shlex.join(["python", "Core/SVM-Classifier/Core.py"])
+            p = subprocess.Popen(args=args, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # get p.pid of process
+        # still not working
         return p.pid
 
     @staticmethod
     def kill_process(pid):
+        # kill process id
         return os.kill(pid)
 
 

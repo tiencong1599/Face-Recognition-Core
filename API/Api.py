@@ -39,11 +39,12 @@ def start_stream():
     # get settings from request
     settings = {
         "db_path": request.form['db_path'],
-        "source": request.form['source']
+        "source": request.form['source'],
+        "model": request.form['model']
     }
 
     # saving setting to a settings.json file
-    with open("settings.json", 'w') as f:
+    with open("API/settings.json", 'w') as f:
         json.dump(settings, f)
 
     # try to open camera source
